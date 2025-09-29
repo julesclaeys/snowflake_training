@@ -142,8 +142,27 @@ Before we built our silver layer, it's important to plan it. Time to build our s
 <details>
     <summary>Solution Schema</summary>
 <img width="1882" height="785" alt="{D03EB781-B10D-400E-BF09-012E467FAED1}" src="https://github.com/user-attachments/assets/751bf1aa-80eb-4259-8577-1f50ba02804d" />
-
 </details>
+
+## Create Tables: 
+
+Split the group into 4, a few tables each. How will you build unique IDs for all your dimensions? 
+
+There are multiple options to create unique IDs, you can either use a function like HASH() or MD5(), or create your dimension tables before the facts table, using a rowID for each distinct row and joining that dimension table to other dimension tables and to the raw data to create your facts table. 
+
+#Option 1: HASH
+
+```
+SELECT HASH(col1, col2, col3) as event_id
+  , col1
+  , col2
+  , col3
+FROM raw_data
+```
+
+This is easy to set up, now everytime a combination of col1, col2, and col3, is hashed you will get the same value, meaning you can use this to create both your dimensions and fact tables. 
+HASH will be a 64bit integer, this is very fast, not much storage but it always recomputes. This means over time,  
+
 
 ## Appendix
 
