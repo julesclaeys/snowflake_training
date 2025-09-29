@@ -146,11 +146,12 @@ Before we built our silver layer, it's important to plan it. Time to build our s
 
 ## Create Tables: 
 
-Split the group into 4, a few tables each. How will you build unique IDs for all your dimensions? 
 
-There are multiple options to create unique IDs, you can either use a function like HASH() or MD5(), or create your dimension tables before the facts table, using a rowID for each distinct row and joining that dimension table to other dimension tables and to the raw data to create your facts table. 
+To create dimension tables you will need unique IDs to be generated, as seen in our plan! There are multiple options to create unique IDs, you can either use a function like HASH() or MD5(), or create your dimension tables before the facts table, using a rowID for each distinct row and joining that dimension table to other dimension tables and to the raw data to create your facts table. 
 
 #Option 1: HASH
+
+The HASH() function will create an integer which is always assigned to the value of the field(s) you tell it to be based on, for example hashing "Belgium" leads to a HASH of -5115476029316419222. You can HASH multiple fields, hashing "Belgium" and "London" leads to a HASH of 8345500420073462720. Be careful, the order of the fields you are hashing matters. 
 
 ```
 SELECT HASH(col1, col2, col3) as event_id
@@ -190,6 +191,12 @@ AND r.col3 = d.col3
 ```
 
 This method is more complicated and manually heavy. It requires more maintenance and it probably more error prone because new values entering the dimensions table could lead to IDs changing unless you can always insert them at the bottom of the table with a new ID. Joins are very effective in Snowflake, your join IDs can be smaller therefore less storage and the computing power is less as joins scale better than hash when having mulitple clauses.
+
+#Let's build the tables!
+Split the group into 4, a few tables each.
+
+
+
 
 ## Appendix
 
