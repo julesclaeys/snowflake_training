@@ -30,3 +30,121 @@
 Our Bronze layer consists of one table with all the data stored as JSON. This will not be easy for data analysts, scientists or other engineers to work with, so for our silver layer, we will convert this into a schema of tables.  
 
 ```
+{"$insert_id":"ea31ba7b-f543-4b9b-9aec-90fbaa96a355",
+"$insert_key":null,"$schema":null,"adid":null,
+"amplitude_attribution_ids":null,
+"amplitude_event_type":null,
+"amplitude_id":45975551903,
+"app":100011471,
+"city":"Hemel Hempstead",
+"client_event_time":"2025-07-17 10:36:28.583000",
+"client_upload_time":"2025-07-17 10:36:29.750000",
+"country":"United Kingdom",
+"data":{"path":"/2/httpapi",
+"user_properties_updated":true,
+"group_first_event":{},
+"group_ids":{}},
+"data_type":"event",
+"device_brand":null,
+"device_carrier":null,
+"device_family":"Mac OS X",
+"device_id":"4289c8b4-7afe-49ed-8814-51c5fc77c693",
+"device_manufacturer":null,
+"device_model":null,
+"device_type":"Mac",
+"dma":null,
+"event_id":135,
+"event_properties":{},
+"event_time":"2025-07-17 10:36:28.583000",
+"event_type":"session_start",
+"global_user_properties":null,
+"group_properties":{},
+"groups":{},
+"idfa":null,
+"ip_address":"82.20.15.60",
+"is_attribution_event":null,
+"language":"English",
+"library":"amplitude-ts/2.16.1",
+"location_lat":null,
+"location_lng":null,
+"os_name":"Chrome",
+"os_version":"137",
+"partner_id":null,
+"paying":null,
+"plan":{},
+"platform":"Web",
+"processed_time":"2025-07-17 10:36:31.609000",
+"region":"Hertfordshire",
+"sample_rate":null,
+"server_received_time":"2025-07-17 10:36:29.750000",
+"server_upload_time":"2025-07-17 10:36:29.753000",
+"session_id":1752748588583,
+"source_id":null,
+"start_version":null,
+"user_creation_time":null,
+"user_id":"jack@theinformationlab.co.uk",
+"user_properties":{"initial_utm_medium":"EMPTY",
+"initial_referring_domain":"EMPTY",
+"initial_utm_content":"EMPTY",
+"initial_utm_campaign":"EMPTY",
+"initial_twclid":"EMPTY",
+"initial_li_fat_id":"EMPTY",
+"referrer":"https://www.google.com/",
+"initial_gclid":"EMPTY",
+"initial_utm_source":"EMPTY",
+"initial_dclid":"EMPTY",
+"initial_wbraid":"EMPTY",
+"initial_fbclid":"EMPTY",
+"initial_rtd_cid":"EMPTY",
+"initial_utm_id":"EMPTY",
+"initial_referrer":"EMPTY",
+"initial_gbraid":"EMPTY",
+"initial_utm_term":"EMPTY",
+"initial_msclkid":"EMPTY",
+"initial_ttclid":"EMPTY",
+"initial_ko_click_id":"EMPTY",
+"referring_domain":"www.google.com"},
+"uuid":"3e702190-9dcb-483a-94d8-58e93ce161de",
+"version_name":null}
+
+```
+
+Typically, the JSON structures can be parsed into a table using these selectors:
+
+```
+SELECT 
+json_data:"$insert_id"::string as "$insert_id",
+json_data:"$insert_key"::string as "$insert_key",
+json_data:event_properties
+FROM amplitude_events_raw;
+```
+
+This is a manual process, it is good to know what you can required to access fields from nested arrays as: 
+
+```
+
+SELECT
+json_data:array_name:field_name::data_type as new_field_name
+FROM table
+
+```
+
+## Appendix
+
+### References
+
+Snowflake Storage Integration
+
+- S3: https://docs.snowflake.com/en/user-guide/data-load-s3-config-storage-integration
+- Azure: https://docs.snowflake.com/en/user-guide/data-load-azure-config
+
+Snowpipe
+- Snowflake: https://docs.snowflake.com/en/user-guide/data-load-snowpipe-intro
+- CREATE PIPE: https://docs.snowflake.com/en/sql-reference/sql/create-pipe
+- Amazon S3: https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html
+
+  
+Snowflake Stored Procedures: https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-overview
+
+Tasks in Snowflake: https://docs.snowflake.com/en/user-guide/tasks-intro
+
