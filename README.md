@@ -205,6 +205,34 @@ You can write stored procedures to extend the system with procedural code. With 
 
 A Snowflake stored procedure code is wrapped in a function taking the snowpark_session and any arguments you have given as options. The snowpark_session will give you access to execute SQL queries through Python.
 
+Let's create this as a stored procedure
+
+```
+CREATE OR REPLACE PROCEDURE REFRESH_S_CHIMPY_ACTION()
+returns varchar
+language sql
+as
+$$
+CREATE OR REPLACE TABLE S_Chimpy_Action as
+SELECT  DISTINCT
+    HASH("_airbyte_data":"action"::string) as action_ID,
+    "_airbyte_data":"action"::string as action_name
+FROM  TIL_DATA_ENGINEERING.JC_DENG_3_STAGING.B_CHIMPY_EMAIL_ACTIVITY;
+$$
+;
+```
+
+Then we can run our procedure with 
+
+```
+CALL REFRESH_S_CHIMPY_ACTION();
+```
+
+Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
+
+# Insert statements! 
+
+
 
 
 
