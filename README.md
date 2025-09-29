@@ -129,6 +129,22 @@ FROM table
 
 ```
 
+Before we built our silver layer, it's important to plan it. Time to build our snowflake schema while taking into account the business requirements / questions: 
+- What journeys are users taking on the website?
+- Is a user making repeated clicks on the website? 
+  - Could this indicate a problem with the website?
+  - Can we flag any user behaviour that seems to indicate a problem with the website?
+- Is there any evidence that a user finds the menu on the UK website confusing?
+- Can we associate the IP address of a user with a particular company, so we can see which companies are visiting the website?
+
+## Schema: 
+
+<details>
+    <summary>Solution Schema</summary>
+<img width="1882" height="785" alt="{D03EB781-B10D-400E-BF09-012E467FAED1}" src="https://github.com/user-attachments/assets/751bf1aa-80eb-4259-8577-1f50ba02804d" />
+
+</details>
+
 ## Appendix
 
 ### References
