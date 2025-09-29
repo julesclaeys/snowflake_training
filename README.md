@@ -161,8 +161,35 @@ FROM raw_data
 ```
 
 This is easy to set up, now everytime a combination of col1, col2, and col3, is hashed you will get the same value, meaning you can use this to create both your dimensions and fact tables. 
-HASH will be a 64bit integer, this is very fast, not much storage but it always recomputes. This means over time,  
+HASH will be a 64bit integer, this is very fast, not much storage but it always recomputes. This means over time, if you refresh the table, compute costs will accumulate. A big pro is that you also don't need to maintain it, your dimensions will always have the same hash and therefore, the same ID. I believe most clients will accept this, as the compute costs are a pretty negligeable part of what they are ready to spend on their data platforms.
 
+#Option 2: Dimension table + join
+
+```
+-- first build a dimension table
+CREATE OR REPLACE TABLE dimensions AS
+SELECT
+  ROW_NUMBER() OVER (Order BY col1, col2, col3) as event_id
+  , col1
+  , col2
+  , col3
+FROM (
+  Select DISTINCT col1, col2, col3 FROM raw_data);
+
+-- Then build fact table
+SELECT r.*
+  , d.event_id
+  , r.col1
+  , r.col2
+  , r.col3
+from r.raw_data
+JOIN d.dimensions
+ON r.col1 = d.col1
+AND r.col2 = d.col2
+AND r.col3 = d.col3
+```
+
+This method is more complicated and manually heavy. It requires more maintenance and it probably more error prone because new values entering the dimensions table could lead to IDs changing unless you can always insert them at the bottom of the table with a new ID. Joins are very effective in Snowflake, your join IDs can be smaller therefore less storage and the computing power is less as joins scale better than hash when having mulitple clauses.
 
 ## Appendix
 
