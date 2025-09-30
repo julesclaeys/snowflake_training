@@ -244,22 +244,86 @@ returns varchar
 language sql
 as
 $$
+BEGIN --if you have multiple queries to perform use begin and end 
 INSERT INTO table_name
 SELECT col1
   , col2
   , col3
 FROM stage s
 JOIN last_refresh_date d
-WHERE s.timestamp > d.timestamp; --this line is optional when you want to only insert new data you would then need to refresh the last_refresh_date
+WHERE s.last_updated > d.last_updated;
+--this line is optional when you want to only insert new data you would then need to refresh the last_refresh_date
 
 INSERT OVERWRITE INTO last_refresh_date
-SELECT MAX(timestamp)
+SELECT MAX(last_updated)
 FROM stage;
+
+END;
 $$
 ;
 
-CALL UPDATE_TABLE()
+CALL UPDATE_TABLE();
 ```
+
+Here is a good example showing you how insert can be used both to update with new rows a table and also refresh fully a table.
+
+# Merge Statements! 
+
+https://docs.snowflake.com/en/sql-reference/sql/merge
+
+You can also use a merge, this will allow you to both insert new rows in the target table while updating or deleting values in your target values if they have changed or don't exist anymore. 
+This is very heavy to compute as you have to go through every single row of the data. 
+
+Here's the syntax in snowflake: 
+
+```
+
+CREATE OR REPLACE PROCEDURE UPDATE_TABLE()
+RETURNS VARCHAR
+LANGUAGE SQL
+AS
+$$
+BEGIN
+    MERGE INTO fact_table f
+    USING stage s
+        ON f.event_id = s.event_id   -- This is how SQL checks which rows you can have different actions for
+    WHEN MATCHED AND f.last_updated < s.last_updated -- If there's a match and the update is more recent, then update
+        THEN UPDATE SET
+            f.col1 = s.col1,
+            f.col2 = s.col2,
+            f.col3 = s.col3,
+            f.last_updated = s.last_updated
+    WHEN NOT MATCHED -- If there's no match then insert the rows
+        THEN INSERT (event_id, col1, col2, col3, last_updated)
+        VALUES (s.event_id, s.col1, s.col2, s.col3, s.last_updated);
+END;
+$$;
+
+```
+
+Remember this is heavy in computing power, I would only do this if I know my facts table isn't too big and that rows will often need to be updated. 
+
+# Scheduling procedures with tasks and streams!
+
+Tasks allow you to automate data processing. They can run at scheduled times or be triggered by events, such as when new dat arrives in a stream. 
+A stream is an object that records data manipulation language changes made to tables, this includes inserts, copy into, and any metadata changes. Once those actions are recordes you can use the stream as a change data capture process to trigger queries and procedures. 
+
+```
+-- Create a Stream
+create stream stream_name
+    on table stage
+
+-- Create a task triggered by the stream
+CREATE OR REPLACE TASK fact_table_update
+WAREHOUSE = dataschool_wh
+SCHEDULE = '5 MINUTE'
+AS
+CALL UPDATE_FACT_FROM_STREAM();
+
+
+
+```
+
 
 
 
