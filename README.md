@@ -317,10 +317,9 @@ create stream stream_name
 CREATE OR REPLACE TASK fact_table_update
 WAREHOUSE = dataschool_wh
 SCHEDULE = '5 MINUTE'
-AS
+WHEN SYSTEM$STREAM_HAS_DATA('stream_name')
+as
 CALL UPDATE_FACT_FROM_STREAM();
-
-
 
 ```
 
