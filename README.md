@@ -232,7 +232,34 @@ Calling the procedure will refresh our action table! But would we want to refres
 
 # Insert statements! 
 
+https://docs.snowflake.com/en/sql-reference/sql/insert
 
+You can use the insert statement to filter out the data coming into. While Copy Into uses metadata to not copy your files twice into a stage, procedures will not, meaning you need to filter our the data you introduce. Metadata or a last refresh date is very useful for this purpose. Insert Into can also be a more efficient version of fully refreshing a table if using the Overwrite parameter. This is the equivalent of truncating the table and inserting data back in. This is supported by Snowflake, Databricks and Bigquery (different syntax), but not by SQLServer, MySQL or Oracle. 
+
+Here is the syntax in snowflake: 
+
+```
+CREATE OR REPLACE PROCEDURE UPDATE_TABLE() --creating the procedure
+returns varchar
+language sql
+as
+$$
+INSERT INTO table_name
+SELECT col1
+  , col2
+  , col3
+FROM stage s
+JOIN last_refresh_date d
+WHERE s.timestamp > d.timestamp; --this line is optional when you want to only insert new data you would then need to refresh the last_refresh_date
+
+INSERT OVERWRITE INTO last_refresh_date
+SELECT MAX(timestamp)
+FROM stage;
+$$
+;
+
+CALL UPDATE_TABLE()
+```
 
 
 
