@@ -344,8 +344,18 @@ Remember that a task running is computing which means it has a cost. So please p
 
 # Snow pipes $$
 
+A Snowpipe is a continuous data ingestion tool, it will constantly scans the stage and when there are new files found, it triggers a copy into commant which inserts the new data into the target table. Snowflake uses metadata to not load data from the same file twice. This is very expensive, only to use if you need a really fast data ingestion. I doubt many clients requires them. 
 
-
+```
+CREATE PIPE event_pipe
+      auto_ingest = true
+    --  aws_sns_topic = '<string>'
+    --  integration = '<string>'
+    -- comment = '<comment>'
+      as COPY INTO events_table  
+      FROM @stage
+      FILE_FORMAT = ( TYPE = 'CSV');
+```
 
 ## Appendix
 
