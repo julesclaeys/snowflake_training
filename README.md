@@ -357,6 +357,17 @@ CREATE PIPE event_pipe
       FILE_FORMAT = ( TYPE = 'CSV');
 ```
 
+This is one where I would ask for permission before building and make sure the client is aware of the costs. 
+
+# Dynamic Tables
+
+Dynamic Tables
+
+Also pricy, dynamic tables automatically refresh based on a defined query. Essentially, they will refresh whenever any base tables (tables used in the query which builds the dynamic table). If your base tables refresh often, then so will your dyanmic tables. You set up a lag in dynamic tables which is how often it will refresh if the base tables have not changed. 
+
+<img width="1180" height="1111" alt="image" src="https://github.com/user-attachments/assets/778f957a-fa19-436b-af0e-aa3fe9e89d21" />
+#
+
 ## Appendix
 
 ### References
