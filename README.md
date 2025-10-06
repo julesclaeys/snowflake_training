@@ -222,6 +222,10 @@ $$
 ;
 ```
 
+Try to build a procedure which will only add the right rows in the table using the extract.
+
+
+
 ```
 CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY()
 returns varchar
