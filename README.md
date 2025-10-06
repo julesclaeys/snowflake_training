@@ -222,11 +222,31 @@ $$
 ;
 ```
 
-Then we can run our procedure with 
+```
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY()
+returns varchar
+language sql
+as
+$$
+BEGIN
 
+INSERT INTO S_AMPLITUDE_COUNTRY
+select distinct
+"country" as country_name,
+hash("country") as country_id
+from amplitude_events e
+JOIN AMPLITUDE_EXTRACT_MAX m
+WHERE e."_airbyte_extracted_at" > m.max_extract;
+
+INSERT OVERWRITE INTO AMPLITUDE_EXTRACT_MAX
+SELECT MAX("_airbyte_extracted_at")
+FROM amplitude_events;
+END
+;
+$$;
 ```
-CALL REFRESH_S_CHIMPY_ACTION();
-```
+
+
 
 Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
 
