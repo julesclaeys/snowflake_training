@@ -222,36 +222,6 @@ $$
 ;
 ```
 
-Try to build a procedure which will only add the right rows in the table using the extract.
-
-
-
-```
-CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY()
-returns varchar
-language sql
-as
-$$
-BEGIN
-
-INSERT INTO S_AMPLITUDE_COUNTRY
-select distinct
-"country" as country_name,
-hash("country") as country_id
-from amplitude_events e
-JOIN AMPLITUDE_EXTRACT_MAX m
-WHERE e."_airbyte_extracted_at" > m.max_extract;
-
-INSERT OVERWRITE INTO AMPLITUDE_EXTRACT_MAX
-SELECT MAX("_airbyte_extracted_at")
-FROM amplitude_events;
-END
-;
-$$;
-```
-
-
-
 Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
 
 # Insert statements! 
@@ -291,6 +261,29 @@ CALL UPDATE_TABLE();
 
 Here is a good example showing you how insert can be used both to update with new rows a table and also refresh fully a table.
 
+```
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY()
+returns varchar
+language sql
+as
+$$
+BEGIN
+
+INSERT INTO S_AMPLITUDE_COUNTRY
+select distinct
+"country" as country_name,
+hash("country") as country_id
+from amplitude_events e
+JOIN AMPLITUDE_EXTRACT_MAX m
+WHERE e."_airbyte_extracted_at" > m.max_extract;
+
+INSERT OVERWRITE INTO AMPLITUDE_EXTRACT_MAX
+SELECT MAX("_airbyte_extracted_at")
+FROM amplitude_events;
+END
+;
+$$;
+```
 # Merge Statements! 
 
 https://docs.snowflake.com/en/sql-reference/sql/merge
