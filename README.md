@@ -208,18 +208,22 @@ A Snowflake stored procedure code is wrapped in a function taking the snowpark_s
 Let's create this as a stored procedure
 
 ```
-CREATE OR REPLACE PROCEDURE REFRESH_S_CHIMPY_ACTION()
+-- Creating a Procedure : 
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_CITY()
 returns varchar
 language sql
 as
 $$
-CREATE OR REPLACE TABLE S_Chimpy_Action as
-SELECT  DISTINCT
-    HASH("_airbyte_data":"action"::string) as action_ID,
-    "_airbyte_data":"action"::string as action_name
-FROM  TIL_DATA_ENGINEERING.JC_DENG_3_STAGING.B_CHIMPY_EMAIL_ACTIVITY;
+CREATE OR REPLACE TABLE S_AMPLITUDE_CITY AS
+select distinct
+"city" as city_name,
+hash("city") as city_id
+from B_amplitude_events;
 $$
 ;
+
+--Run procedure
+CALL REFRESH_S_AMPLITUDE_CITY();
 ```
 
 Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
