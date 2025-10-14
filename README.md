@@ -237,30 +237,29 @@ You can use the insert statement to filter out the data coming into. While Copy 
 Here is the syntax in snowflake: 
 
 ```
-CREATE OR REPLACE PROCEDURE UPDATE_TABLE() --creating the procedure
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY() --creating the procedure
 returns varchar
 language sql
 as
 $$
 BEGIN --if you have multiple queries to perform use begin and end 
-INSERT INTO table_name
-SELECT col1
-  , col2
-  , col3
-FROM stage s
-JOIN last_refresh_date d
-WHERE s.last_updated > d.last_updated;
+INSERT INTO S_AMPLITUDE_COUNTRY
+select distinct
+"country" as country_name,
+hash("country") as country_id
+from b_amplitude_events s
+JOIN Last_Amplitude_Extract d
+WHERE s."_airbyte_extracted_at" > d.last_extract;
 --this line is optional when you want to only insert new data you would then need to refresh the last_refresh_date
 
-INSERT OVERWRITE INTO last_refresh_date
-SELECT MAX(last_updated)
-FROM stage;
+INSERT OVERWRITE INTO Last_Amplitude_Extract
+SELECT MAX("_airbyte_extracted_at") as last_extract FROM B_AMPLITUDE_EVENTS;
 
 END;
 $$
 ;
-
-CALL UPDATE_TABLE();
+-- Run procedure 
+CALL REFRESH_S_AMPLITUDE_COUNTRY();
 ```
 
 Here is a good example showing you how insert can be used both to update with new rows a table and also refresh fully a table.
