@@ -269,27 +269,47 @@ This is very heavy to compute as you have to go through every single row of the 
 Here's the syntax in snowflake: 
 
 ```
-
-CREATE OR REPLACE PROCEDURE UPDATE_TABLE()
-RETURNS VARCHAR
-LANGUAGE SQL
-AS
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_EVENTS()
+returns varchar
+language sql
+as
 $$
-BEGIN
-    MERGE INTO fact_table f
-    USING stage s
-        ON f.event_id = s.event_id   -- This is how SQL checks which rows you can have different actions for
-    WHEN MATCHED AND f.last_updated < s.last_updated -- If there's a match and the update is more recent, then update
-        THEN UPDATE SET
-            f.col1 = s.col1,
-            f.col2 = s.col2,
-            f.col3 = s.col3,
-            f.last_updated = s.last_updated
-    WHEN NOT MATCHED -- If there's no match then insert the rows
-        THEN INSERT (event_id, col1, col2, col3, last_updated)
-        VALUES (s.event_id, s.col1, s.col2, s.col3, s.last_updated);
-END;
-$$;
+MERGE INTO S_AMPLITUDE_EVENTS tgt
+USING (
+    SELECT DISTINCT
+         eve."uuid"               AS event_id,
+         eve."session_id"         AS session_id,
+         eve."event_id"           AS session_event_order,
+         evel."id"                AS id,
+         eve."event_time"         AS event_time,
+         HASH(eve."user_properties") AS user_properties_id,
+         HASH(eve."event_properties") AS event_properties_id
+    FROM B_amplitude_events eve
+    LEFT JOIN B_AMPLITUDE_EVENTS_LISTS evel
+        ON eve."event_type" = evel."name"
+    WHERE eve."event_time" > (
+        SELECT COALESCE(MAX(event_time), '1900-01-01') FROM S_AMPLITUDE_EVENTS ) 
+) src
+ON tgt.event_id = src.event_id
+WHEN NOT MATCHED THEN INSERT (
+    event_id,
+    session_id,
+    session_event_order,
+    events_list_id,
+    event_time,
+    user_properties_id,
+    event_properties_id
+) VALUES (
+    src.event_id,
+    src.session_id,
+    src.session_event_order,
+    src.id,
+    src.event_time,
+    src.user_properties_id,
+    src.event_properties_id
+);  
+$$
+;
 
 ```
 
