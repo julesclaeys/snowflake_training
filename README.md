@@ -321,9 +321,19 @@ Tasks allow you to automate data processing. They can run at scheduled times or 
 A stream is an object that records data manipulation language changes made to tables, this includes inserts, copy into, and any metadata changes. Once those actions are recordes you can use the stream as a change data capture process to trigger queries and procedures. 
 
 ```
--- Create a Stream
-create stream stream_name
-    on table stage
+-- creating stream 
+CREATE OR REPLACE STREAM Amplitude_raw ON TABLE B_AMPLITUDE_EVENTS;
+
+-- Currently Stream is empty 
+SELECT 1 FROM AMPLITUDE_RAW;
+
+-- inserting 2 rows via duplication
+INSERT INTO B_AMPLITUDE_EVENTS ( 
+SELECT * FROM B_AMPLITUDE_EVENTS 
+limit 2);
+
+-- now there's 2 rows here! 
+SELECT 1 FROM AMPLITUDE_RAW
 
 -- Create a task triggered by the stream
 CREATE OR REPLACE TASK fact_table_update
