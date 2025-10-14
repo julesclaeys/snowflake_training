@@ -336,14 +336,15 @@ limit 2);
 SELECT 1 FROM AMPLITUDE_RAW
 
 -- Create a task triggered by the stream
-CREATE OR REPLACE TASK fact_table_update
+CREATE OR REPLACE TASK TRIGGER_S_AMPLITUDE_EVENTS_REFRESH
 WAREHOUSE = dataschool_wh
-SCHEDULE = '5 MINUTE'
-WHEN SYSTEM$STREAM_HAS_DATA('stream_name')
+SCHEDULE = '5 MINUTE' --this means every 5min, the task will check if the stream has data. 
+WHEN SYSTEM$STREAM_HAS_DATA('Amplitude_raw')
 as
-CALL UPDATE_FACT_FROM_STREAM();
+CALL REFRESH_S_AMPLITUDE_EVENTS();
 
 ```
+Be careful, the task will only run once resumed, it is by default suspended. 
 
 Now this means our stream will look for data every 5 minutes... which is pretty often, and if we don't load data into our stage long enough will just cost us a lot for nothing. You can either change that to be less often but then maybe we can skip the stream all together and just schedule a task based on time: 
 
