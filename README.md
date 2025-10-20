@@ -318,7 +318,7 @@ Remember this is heavy in computing power, I would only do this if I know my fac
 # Scheduling procedures with tasks and streams!
 
 Tasks allow you to automate data processing. They can run at scheduled times or be triggered by events, such as when new dat arrives in a stream. 
-A stream is an object that records data manipulation language changes made to tables, this includes inserts, copy into, and any metadata changes. Once those actions are recordes you can use the stream as a change data capture process to trigger queries and procedures. 
+A stream is an object that records data manipulation language changes made to tables, this includes inserts, copy into, and any metadata changes. Once those actions are recordes you can use the stream as a change data capture process to trigger queries and procedures. The inserted or updated rows will be stored in the stream.  
 
 ```
 -- creating stream 
@@ -333,7 +333,7 @@ SELECT * FROM B_AMPLITUDE_EVENTS
 limit 2);
 
 -- now there's 2 rows here! 
-SELECT 1 FROM AMPLITUDE_RAW
+SELECT 1 FROM AMPLITUDE_RAW;
 
 -- Create a task triggered by the stream
 CREATE OR REPLACE TASK TRIGGER_S_AMPLITUDE_EVENTS_REFRESH
@@ -343,16 +343,26 @@ WHEN SYSTEM$STREAM_HAS_DATA('Amplitude_raw')
 as
 CALL REFRESH_S_AMPLITUDE_EVENTS();
 
+-- Now after resuming the task
+-- now there's 2 rows here! 
+SELECT 1 FROM AMPLITUDE_RAW;
+
+--Check task has run
+SELECT * FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY());
+
+-- check stream for data, still has some! 
+SELECT 1 FROM AMPLITUDE_RAW;
+
 ```
-Be careful, the task will only run once resumed, it is by default suspended. 
+Be careful, the task will only run once resumed, it is by default suspended. For the stream to offset data, it needs to be used in the procedure! Instead of using the latest refresh table we created, we would use the stream directly. 
 
 Now this means our stream will look for data every 5 minutes... which is pretty often, and if we don't load data into our stage long enough will just cost us a lot for nothing. You can either change that to be less often but then maybe we can skip the stream all together and just schedule a task based on time: 
 
 ```
-CREATE TASK fact_table_daily
+CREATE TASK DAILY_S_AMPLITUDE_COUNTRY
   SCHEDULE='USING CRON 0 8 * * * Europe/London'
 AS
-CALL UPDATE_TABLE();
+CALL REFRESH_S_AMPLITUDE_COUNTRY();
 ```
 
 After creating a task you need to make sure it is resumed, this can be done through the UI or via this line: 
