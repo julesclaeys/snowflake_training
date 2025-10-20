@@ -413,6 +413,32 @@ Also pricy, dynamic tables automatically refresh based on a defined query. Essen
 
 <img width="1180" height="1111" alt="image" src="https://github.com/user-attachments/assets/778f957a-fa19-436b-af0e-aa3fe9e89d21" />
 
+```
+-- Create dynamic Table
+CREATE OR REPLACE DYNAMIC TABLE G_AMPLITUDE_LOCATION
+LAG = '1 MINUTE'
+WAREHOUSE = DATASCHOOL_WH
+as
+SELECT LOCATION_ID, CITY_NAME, COUNTRY_NAME, IP_ADDRESS FROM S_AMPLITUDE_LOCATION L
+JOIN S_AMPLITUDE_CITY C
+ON C.CITY_ID = L.CITY_ID
+JOIN S_AMPLITUDE_COUNTRY D
+ON D.COUNTRY_ID = L.COUNTRY_ID;
+
+-- checking table
+SELECT COUNT(*) FROM G_AMPLITUDE_LOCATION; 
+
+-- inserting 2 rows via duplication
+INSERT INTO S_AMPLITUDE_LOCATION ( 
+SELECT * FROM S_AMPLITUDE_LOCATION 
+limit 2);
+
+-- one min later...
+
+-- checking table
+SELECT COUNT(*) FROM G_AMPLITUDE_LOCATION; 
+```
+
 # Materialised Views
 
 
