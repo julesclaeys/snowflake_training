@@ -359,18 +359,31 @@ Be careful, the task will only run once resumed, it is by default suspended. For
 Now this means our stream will look for data every 5 minutes... which is pretty often, and if we don't load data into our stage long enough will just cost us a lot for nothing. You can either change that to be less often but then maybe we can skip the stream all together and just schedule a task based on time: 
 
 ```
+-- Daily Task for country 
 CREATE TASK DAILY_S_AMPLITUDE_COUNTRY
+WAREHOUSE = dataschool_wh
   SCHEDULE='USING CRON 0 8 * * * Europe/London'
 AS
 CALL REFRESH_S_AMPLITUDE_COUNTRY();
-```
 
+```
 After creating a task you need to make sure it is resumed, this can be done through the UI or via this line: 
 
 ```
 
 ALTER TASK task_name RESUME;
 
+```
+
+There is also the possibility of running cxhains of task by running them one by one: 
+
+```
+-- task following 
+CREATE OR REPLACE TASK DAILY_G_AMPLITUDE
+WAREHOUSE = dataschool_wh
+  AFTER DAILY_S_AMPLITUDE_COUNTRY
+AS
+SELECT * FROM S_AMPLITUDE_COUNTRY; 
 ```
 
 Remember that a task running is computing which means it has a cost. So please pause your streams and tasks after use. 
