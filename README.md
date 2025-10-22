@@ -205,8 +205,13 @@ You can write stored procedures to extend the system with procedural code. With 
 
 A Snowflake stored procedure code is wrapped in a function taking the snowpark_session and any arguments you have given as options. The snowpark_session will give you access to execute SQL queries through Python.
 
-Let's create this as a stored procedure
+### Can you Refresh the City table using a procedure? 
 
+Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
+
+<details>
+    <summary>Solution Procedure Example</summary>
+  
 ```
 -- Creating a Procedure : 
 CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_CITY()
@@ -225,8 +230,8 @@ $$
 --Run procedure
 CALL REFRESH_S_AMPLITUDE_CITY();
 ```
+  </details>
 
-Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
 
 # Insert statements! 
 
