@@ -207,7 +207,7 @@ A Snowflake stored procedure code is wrapped in a function taking the snowpark_s
 
 ### Can you Refresh the City table using a procedure? 
 
-Calling the procedure will refresh our action table! But would we want to refresh the whole table everytime? Seems quite heavy...
+Calling the procedure will refresh our action table! So remember to test it!
 
 <details>
     <summary>Solution Procedure Example</summary>
