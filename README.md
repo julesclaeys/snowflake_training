@@ -398,14 +398,17 @@ Remember that a task running is computing which means it has a cost. So please p
 A Snowpipe is a continuous data ingestion tool, it will constantly scans the stage and when there are new files found, it triggers a copy into commant which inserts the new data into the target table. Snowflake uses metadata to not load data from the same file twice. This is very expensive, only to use if you need a really fast data ingestion. I doubt many clients requires them. 
 
 ```
-CREATE PIPE event_pipe
-      auto_ingest = true
-    --  aws_sns_topic = '<string>'
-    --  integration = '<string>'
-    -- comment = '<comment>'
-      as COPY INTO events_table  
-      FROM @stage
-      FILE_FORMAT = ( TYPE = 'CSV');
+CREATE OR REPLACE PIPE Amplitude_Snowpipe
+auto_ingest = TRUE
+as 
+COPY INTO B_AMPLITUDE_EVENTS
+FROM @TIL_DATA_ENGINEERING.JC_DENG_3_STAGING.AMPLITUDE_AIRBYTE_ST/events/
+FILE_FORMAT = TIL_DATA_ENGINEERING.JC_DENG_3_STAGING.JC_JSON_FORMAT
+MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+ON_ERROR = 'CONTINUE';
+
+-- This makes sure old files are uploaded from your stage to your table!
+ALTER PIPE Amplitude_Snowpipe REFRESH; 
 ```
 
 This is one where I would ask for permission before building and make sure the client is aware of the costs. 
@@ -444,7 +447,6 @@ limit 2);
 SELECT COUNT(*) FROM G_AMPLITUDE_LOCATION; 
 ```
 
-# Materialised Views
 
 
 ## Appendix
