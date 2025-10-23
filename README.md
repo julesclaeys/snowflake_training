@@ -239,7 +239,7 @@ https://docs.snowflake.com/en/sql-reference/sql/insert
 
 You can use the insert statement to filter out the data coming into. While Copy Into uses metadata to not copy your files twice into a stage, procedures will not, meaning you need to filter our the data you introduce. Metadata or a last refresh date is very useful for this purpose. Insert Into can also be a more efficient version of fully refreshing a table if using the Overwrite parameter. This is the equivalent of truncating the table and inserting data back in. This is supported by Snowflake, Databricks and Bigquery (different syntax), but not by SQLServer, MySQL or Oracle. 
 
-Here is a good example showing you how insert can be used both to update with new rows a table and also refresh fully a table.
+Can you use a procedure to only insert new rows into the country silver layer table? 
 
 ```
 CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY()
@@ -271,7 +271,7 @@ https://docs.snowflake.com/en/sql-reference/sql/merge
 You can also use a merge, this will allow you to both insert new rows in the target table while updating or deleting values in your target values if they have changed or don't exist anymore. 
 This is very heavy to compute as you have to go through every single row of the data. 
 
-Here's the syntax in snowflake: 
+Using the documentation, can you use a merge statement to refresh the ampltidue events silver layer table? 
 
 ```
 CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_EVENTS()
