@@ -193,7 +193,7 @@ AND r.col3 = d.col3
 This method is more complicated and manually heavy. It requires more maintenance and it probably more error prone because new values entering the dimensions table could lead to IDs changing unless you can always insert them at the bottom of the table with a new ID. Joins are very effective in Snowflake, your join IDs can be smaller therefore less storage and the computing power is less as joins scale better than hash when having mulitple clauses.
 
 ### Let's build the tables!
-Split the group into 4, a few tables each.
+Split the group into 4, a few tables each, then share your tables with other groups.
 
 ### But how do we update those tables? Procedures!
 
