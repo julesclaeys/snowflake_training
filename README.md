@@ -334,12 +334,33 @@ Remember this is heavy in computing power, I would only do this if I know my fac
 Tasks allow you to automate data processing. They can run at scheduled times or be triggered by events, such as when new dat arrives in a stream. 
 A stream is an object that records data manipulation language changes made to tables, this includes inserts, copy into, and any metadata changes. Once those actions are recordes you can use the stream as a change data capture process to trigger queries and procedures. The inserted or updated rows will be stored in the stream.  
 
+Create a Stream, Procedure that uses the stream, and a task to schedule the procedure to run whenever the stream has data! You can reuse a procedure you've build before. Remember your procedure needs to use data from the stream or your stream won't offset the data. 
+
+<details>
+    <summary> Solution the task triggered by stream </summary>
+
 ```
 -- creating stream 
 CREATE OR REPLACE STREAM Amplitude_raw ON TABLE B_AMPLITUDE_EVENTS;
 
 -- Currently Stream is empty 
 SELECT 1 FROM AMPLITUDE_RAW;
+
+-- Modifying our Country Procedure: 
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY() 
+returns varchar
+language sql
+as
+$$
+BEGIN 
+
+INSERT INTO S_AMPLITUDE_COUNTRY
+select distinct
+"country" as country_name,
+hash("country") as country_id
+from Amplitude_raw;
+END
+$$;
 
 -- inserting 2 rows via duplication
 INSERT INTO B_AMPLITUDE_EVENTS ( 
@@ -352,22 +373,27 @@ SELECT 1 FROM AMPLITUDE_RAW;
 -- Create a task triggered by the stream
 CREATE OR REPLACE TASK TRIGGER_S_AMPLITUDE_EVENTS_REFRESH
 WAREHOUSE = dataschool_wh
-SCHEDULE = '5 MINUTE' --this means every 5min, the task will check if the stream has data. 
+SCHEDULE = '1 MINUTE' --this means every 5min, the task will check if the stream has data. 
 WHEN SYSTEM$STREAM_HAS_DATA('Amplitude_raw')
 as
-CALL REFRESH_S_AMPLITUDE_EVENTS();
+CALL REFRESH_S_AMPLITUDE_COUNTRY();
 
 -- Now after resuming the task
+ALTER TASK TRIGGER_S_AMPLITUDE_EVENTS_REFRESH RESUME;
 -- now there's 2 rows here! 
 SELECT 1 FROM AMPLITUDE_RAW;
 
 --Check task has run
 SELECT * FROM TABLE(INFORMATION_SCHEMA.TASK_HISTORY());
 
--- check stream for data, still has some! 
+-- check stream for data, woohoo it does not!
 SELECT 1 FROM AMPLITUDE_RAW;
 
+-- Stop Task 
+ALTER TASK TRIGGER_S_AMPLITUDE_EVENTS_REFRESH SUSPEND;
 ```
+  </details>
+  
 Be careful, the task will only run once resumed, it is by default suspended. For the stream to offset data, it needs to be used in the procedure! Instead of using the latest refresh table we created, we would use the stream directly. 
 
 Now this means our stream will look for data every 5 minutes... which is pretty often, and if we don't load data into our stage long enough will just cost us a lot for nothing. You can either change that to be less often but then maybe we can skip the stream all together and just schedule a task based on time: 
