@@ -398,6 +398,11 @@ Be careful, the task will only run once resumed, it is by default suspended. For
 
 Now this means our stream will look for data every 5 minutes... which is pretty often, and if we don't load data into our stage long enough will just cost us a lot for nothing. You can either change that to be less often but then maybe we can skip the stream all together and just schedule a task based on time: 
 
+Schedule a tasks to run a procedure daily
+
+<details>
+    <summary> Solution the daily task </summary>
+
 ```
 -- Daily Task for country 
 CREATE TASK DAILY_S_AMPLITUDE_COUNTRY
@@ -412,10 +417,13 @@ After creating a task you need to make sure it is resumed, this can be done thro
 ```
 
 ALTER TASK task_name RESUME;
-
 ```
+  </details>
 
-There is also the possibility of running cxhains of task by running them one by one: 
+Now run a second task after the daily one, simnilarly to a chain of tasks
+
+<details>
+    <summary> Solution the chain of tasks task </summary>
 
 ```
 -- task following 
@@ -425,12 +433,18 @@ WAREHOUSE = dataschool_wh
 AS
 SELECT * FROM S_AMPLITUDE_COUNTRY; 
 ```
+  </details>
 
 Remember that a task running is computing which means it has a cost. So please pause your streams and tasks after use. 
 
 # Snow pipes $$
 
 A Snowpipe is a continuous data ingestion tool, it will constantly scans the stage and when there are new files found, it triggers a copy into commant which inserts the new data into the target table. Snowflake uses metadata to not load data from the same file twice. This is very expensive, only to use if you need a really fast data ingestion. I doubt many clients requires them. 
+
+Can you build a SnowPipe to load data into your Bronze Events table? 
+
+<details>
+    <summary> Solution to creating a snowpipe from your stage</summary>
 
 ```
 CREATE OR REPLACE PIPE Amplitude_Snowpipe
@@ -445,6 +459,7 @@ ON_ERROR = 'CONTINUE';
 -- This makes sure old files are uploaded from your stage to your table!
 ALTER PIPE Amplitude_Snowpipe REFRESH; 
 ```
+  </details>
 
 This is one where I would ask for permission before building and make sure the client is aware of the costs. 
 
@@ -455,6 +470,11 @@ Dynamic Tables
 Also pricy, dynamic tables automatically refresh based on a defined query. Essentially, they will refresh whenever any base tables (tables used in the query which builds the dynamic table). If your base tables refresh often, then so will your dyanmic tables. You set up a lag in dynamic tables which is how often it will refresh if the base tables have not changed. 
 
 <img width="1180" height="1111" alt="image" src="https://github.com/user-attachments/assets/778f957a-fa19-436b-af0e-aa3fe9e89d21" />
+
+With this diagram in mind, can you set up a Golden layer made of Dynamic Tables? 
+
+<details>
+    <summary> Solution to building a gold layer through dynamic tables</summary>
 
 ```
 -- Create dynamic Table
@@ -481,7 +501,7 @@ limit 2);
 -- checking table
 SELECT COUNT(*) FROM G_AMPLITUDE_LOCATION; 
 ```
-
+  </details>
 
 
 ## Appendix
