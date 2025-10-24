@@ -205,12 +205,12 @@ You can write stored procedures to extend the system with procedural code. With 
 
 A Snowflake stored procedure code is wrapped in a function taking the snowpark_session and any arguments you have given as options. The snowpark_session will give you access to execute SQL queries through Python.
 
-### Can you Refresh the City table using a procedure? 
+Can you Refresh the City table using a procedure? 
 
 Calling the procedure will refresh our action table! So remember to test it!
 
 <details>
-    <summary>Solution Procedure Example</summary>
+    <summary>Solution Procedure Amplitude City</summary>
   
 ```
 -- Creating a Procedure : 
@@ -241,21 +241,24 @@ You can use the insert statement to filter out the data coming into. While Copy 
 
 Can you use a procedure to only insert new rows into the country silver layer table? 
 
+<details>
+    <summary>Solution Insert Statement Country </summary>
+
 ```
-CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY()
+CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_COUNTRY() 
 returns varchar
 language sql
 as
 $$
-BEGIN
+BEGIN --Remember Begin and End so you can have multiple queries within your procedures 
 
 INSERT INTO S_AMPLITUDE_COUNTRY
 select distinct
 "country" as country_name,
 hash("country") as country_id
 from amplitude_events e
-JOIN AMPLITUDE_EXTRACT_MAX m
-WHERE e."_airbyte_extracted_at" > m.max_extract;
+JOIN AMPLITUDE_EXTRACT_MAX m --Remember You need to have created a table with your max extract first! 
+WHERE e."_airbyte_extracted_at" > m.max_extract; 
 
 INSERT OVERWRITE INTO AMPLITUDE_EXTRACT_MAX
 SELECT MAX("_airbyte_extracted_at")
@@ -264,6 +267,9 @@ END
 ;
 $$;
 ```
+  </details>
+
+    
 # Merge Statements! 
 
 https://docs.snowflake.com/en/sql-reference/sql/merge
@@ -272,6 +278,9 @@ You can also use a merge, this will allow you to both insert new rows in the tar
 This is very heavy to compute as you have to go through every single row of the data. 
 
 Using the documentation, can you use a merge statement to refresh the ampltidue events silver layer table? 
+
+<details>
+    <summary> Solution for the merge of Amplitude Events </summary>
 
 ```
 CREATE OR REPLACE PROCEDURE REFRESH_S_AMPLITUDE_EVENTS()
@@ -315,8 +324,8 @@ WHEN NOT MATCHED THEN INSERT (
 );  
 $$
 ;
-
 ```
+  </details>
 
 Remember this is heavy in computing power, I would only do this if I know my facts table isn't too big and that rows will often need to be updated. 
 
